@@ -26,8 +26,8 @@ from pysc2.lib import actions, features, units
 import random
 from absl import app
 
-from collections import namedtuple
-Point = namedtuple('Point', 'x y')
+from pysc2.lib import point
+Point = point.Point
 
 FUNCTIONS = actions.FUNCTIONS
 
@@ -70,12 +70,16 @@ BARRACKS_GROUP = 7
 
 
 def unit_type_selected(obs, unit_type):
+  print(unit_type)
+  print('HERE')
+  print((obs.observation.single_select.any() and obs.observation.single_select[0].unit_type == unit_type))
+  print((obs.observation.multi_select.any() and obs.observation.multi_select[0].unit_type == unit_type))
   return \
     (obs.observation.single_select.any() and obs.observation.single_select[0].unit_type == unit_type) \
     or \
     (obs.observation.multi_select.any() and obs.observation.multi_select[0].unit_type == unit_type)
 
-
+import time
 class TerranParametrizedAgent(base_agent.BaseAgent):
   """A parametrized Terran Agent."""
 
@@ -95,7 +99,7 @@ class TerranParametrizedAgent(base_agent.BaseAgent):
   def step(self, obs):
     super(TerranParametrizedAgent, self).step(obs)
 
-    self.queue.append(FUNCTIONS.no_op())
+    # self.queue.append(FUNCTIONS.no_op())
 
     if self.queue:
       return self.queue.pop(0)
@@ -132,6 +136,7 @@ class TerranParametrizedAgent(base_agent.BaseAgent):
 
       if self.currently_building == units.Terran.SupplyDepot:
         if not unit_type_selected(obs, units.Terran.SCV):
+          print('WORKER')
           self.queue.append(self.select_worker_for_build(obs))
         elif obs.observation.player.minerals >= 100:
           if FUNCTIONS.Build_SupplyDepot_screen.id in obs.observation.available_actions:
@@ -204,6 +209,7 @@ class TerranParametrizedAgent(base_agent.BaseAgent):
       point = Point(ccs_x[0], ccs_y[0])
       self.current_loc = point
       self.current_main_cc_loc = point
+      self.initial_cc_set = True
       return
 
     if obs.observation.control_groups[CCS_GROUP][1] > 0:
@@ -236,22 +242,22 @@ class TerranParametrizedAgent(base_agent.BaseAgent):
     n = units.Neutral
     minerals_types = [n.MineralField, n.MineralField750, n.RichMineralField, n.RichMineralField750]
     minerals = [unit for unit in obs.observation.feature_units if unit.unit_type in minerals_types]
-    center_of_building_area = Point(42, 42)
+    random_x = random.randint(5, 80)
+    random_y = random.randint(5, 80)
+    loc = Point(random_x, random_y)
 
     if minerals:
       sum_x = sum(map(lambda unit: unit.x, minerals))
       sum_y = sum(map(lambda unit: unit.y, minerals))
       minerals_avg_loc_x = sum_x / len(minerals)
       minerals_avg_loc_y = sum_y / len(minerals)
-      center_x = 2 * center_of_building_area.x - minerals_avg_loc_x
-      center_y = 2 * center_of_building_area.y - minerals_avg_loc_y
-      center_of_building_area = Point(center_x, center_y)
+      minerals_avg_loc = Point(minerals_avg_loc_x, minerals_avg_loc_y)
+      while minerals_avg_loc.dist(loc) < 20:
+        random_x = random.randint(5, 80)
+        random_y = random.randint(5, 80)
+        loc = Point(random_x, random_y)
 
-    random_x = random.randint(22, 62)
-    random_y = random.randint(22, 62)
-    random
-    self.smart_screen(center_of_building_area)
-    return random_x, random_y
+    return loc
 
 
 def main(unused_argv):
