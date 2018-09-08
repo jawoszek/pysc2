@@ -73,6 +73,7 @@ setup(
         'sk-video',
         'websocket-client',
         'whichcraft',
+        'scikit-learn>=0.19.2',
     ],
     entry_points={
         'console_scripts': [
