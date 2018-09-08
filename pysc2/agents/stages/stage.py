@@ -97,7 +97,7 @@ class Stage(object):
              if
              (unit_type is None or unit.unit_type == unit_type)
              and
-             (not only_ready or unit.build_progress == 100)])
+             (not only_ready or unit.build_progress == 0 or unit.build_progress == 100)])
 
     def select_units(self, obs, unit_type, count: int=None):
         units_on_screen = self.units_on_screen(obs, unit_type)
@@ -107,16 +107,16 @@ class Stage(object):
 
         if count is None:
             unit_to_select = random.choice(units_on_screen)
-            unit = Point(unit_to_select.x, unit_to_select.y)
+            unit = self.parameters.screen_point(unit_to_select.x, unit_to_select.y)
             self.queue.append(FUNCTIONS.select_point('select_all_type', unit))
         elif count < 1:
             pass
         else:
             units_to_select = random.choices(units_on_screen, k=count)
-            first_unit = Point(units_to_select[0].x, units_to_select[0].y)
+            first_unit = self.parameters.screen_point(units_to_select[0].x, units_to_select[0].y)
             self.queue.append(FUNCTIONS.select_point('select', first_unit))
             for unit in units_to_select[1:]:
-                next_unit = Point(unit.x, unit.y)
+                next_unit = self.parameters.screen_point(unit.x, unit.y)
                 self.queue.append(FUNCTIONS.select_point('toggle', next_unit))
 
     def select_army(self):
@@ -138,28 +138,37 @@ class Stage(object):
 
     def all_expansion_locations(self, obs, also_visible=False):
         y, x = (obs.observation.feature_minimap.player_relative == features.PlayerRelative.NEUTRAL).nonzero()
-        expansions = self.locations_to_points(x, y)
+        expansions = self.locations_to_points(x, y, screen=False)
         if also_visible:
             return expansions
         visible = self.get_visible_minimap(obs)
         return [expansion for expansion in expansions if expansion not in visible]
 
-    def get_positions_of_enemy_on_minimap(self, obs, only_visible=False):
+    def get_positions_of_enemy_on_minimap(self, obs, only_visible=False, distance_from_visible=None):
         y, x = (obs.observation.feature_minimap.player_relative == features.PlayerRelative.ENEMY).nonzero()
-        enemies = self.locations_to_points(x, y)
+        enemies = self.locations_to_points(x, y, screen=False)
         if not only_visible:
             return enemies
         visible = self.get_visible_minimap(obs)
+        if distance_from_visible is not None:
+            return [enemy for enemy in enemies if self.point_in_range_for_any(enemy, visible, distance_from_visible)]
         return [enemy for enemy in enemies if enemy in visible]
 
     @staticmethod
-    def get_visible_minimap(obs):
-        v_y, v_x = (obs.observation.feature_minimap.visibility_map == features.Visibility.VISIBLE).nonzero()
-        return Stage.locations_to_points(v_x, v_y)
+    def point_in_range_for_any(target, points, dist_range):
+        return any([point for point in points if Stage.point_in_range(target, point, dist_range)])
 
     @staticmethod
-    def locations_to_points(x, y):
-        return list(map(lambda xy: Point(xy[0], xy[1]), zip(x, y)))
+    def point_in_range(source, target, dist_range):
+        return source.dist(target) <= dist_range
+
+    def get_visible_minimap(self, obs):
+        v_y, v_x = (obs.observation.feature_minimap.visibility_map == features.Visibility.VISIBLE).nonzero()
+        return self.locations_to_points(v_x, v_y, screen=False)
+
+    def locations_to_points(self, x, y, screen=True):
+        transform = self.parameters.screen_point if screen else self.parameters.minimap_point
+        return list(map(lambda xy: transform(xy[0], xy[1]), zip(x, y)))
 
     def distance_from_base_to_loc(self, loc):
         return self.state.current_main_cc_loc.dist(loc)
@@ -169,4 +178,16 @@ class Stage(object):
         y = self.state.current_main_cc_loc.y
         minimap_size = self.state.MINIMAP_SIZE
 
-        return [Point(minimap_size - x, minimap_size - y), Point(minimap_size - x, y), Point(x, minimap_size - y)]
+        return [
+            self.parameters.minimap_point(minimap_size - x, minimap_size - y),
+            self.parameters.minimap_point(minimap_size - x, y),
+            self.parameters.minimap_point(x, minimap_size - y)
+        ]
+
+    @staticmethod
+    def free_vespene_geyser_on_screen(obs):
+        geysers = {units.Neutral.VespeneGeyser, units.Neutral.RichVespeneGeyser}
+        refineries = {units.Terran.Refinery, units.Zerg.Extractor, units.Protoss.Assimilator}
+        geysers_count = sum([1 for unit in obs.observation.feature_units if unit.unit_type in geysers])
+        refineries_count = sum([1 for unit in obs.observation.feature_units if unit.unit_type in refineries])
+        return geysers_count > refineries_count

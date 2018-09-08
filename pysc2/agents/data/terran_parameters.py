@@ -38,7 +38,13 @@ RECRUIT_ORDER_DEFAULT = [
         units.Terran.SCV,
         units.Terran.SCV,
         units.Terran.SCV,
+        units.Terran.SCV,
+        units.Terran.SCV,
+        units.Terran.SCV,
         units.Terran.Marine,
+        units.Terran.SCV,
+        units.Terran.Marine,
+        units.Terran.SCV,
         units.Terran.Marine,
         units.Terran.Marine,
         units.Terran.Marine,
@@ -96,16 +102,18 @@ RECRUIT_ORDER_DEFAULT = [
 
 BUILD_ORDER_DEFAULT = [
     (12, units.Terran.SupplyDepot),
-    (15, units.Terran.Barracks),
+    (14, units.Terran.Barracks),
+    (16, units.Terran.SupplyDepot),
     (17, units.Terran.Refinery),
     (18, units.Terran.Barracks),
     (19, units.Terran.SupplyDepot),
+    (22, units.Terran.Barracks),
+    (23, units.Terran.Refinery),
     (24, units.Terran.SupplyDepot),
     (28, units.Terran.Barracks),
     (34, units.Terran.SupplyDepot),
     (40, units.Terran.SupplyDepot),
     (48, units.Terran.SupplyDepot),
-    (52, units.Terran.Barracks),
     (56, units.Terran.SupplyDepot),
     (64, units.Terran.SupplyDepot)
 ]
@@ -113,7 +121,9 @@ BUILD_ORDER_DEFAULT = [
 
 class TerranParameters(object):
 
-    def __init__(self, recruit_order=None, build_order=None):
+    def __init__(self, screen_size, minimap_size, recruit_order=None, build_order=None):
+        self.screen_size = screen_size
+        self.minimap_size = minimap_size
         if recruit_order is None:
             self.recruit_order = RECRUIT_ORDER_DEFAULT
         else:
@@ -140,3 +150,33 @@ class TerranParameters(object):
 
     def recruit_order_next(self, state: TerranState):
         return self.recruit_order[state.recruit_order_pos]
+
+    def screen_point(self, x, y):
+        if x < 0:
+            print("Screen x coord with wrong value - {0}".format(x))
+            x = 0
+        if x >= self.screen_size:
+            print("Screen x coord with wrong value - {0}".format(x))
+            x = self.screen_size - 1
+        if y < 0:
+            print("Screen y coord with wrong value - {0}".format(y))
+            y = 0
+        if y >= self.screen_size:
+            print("Screen y coord with wrong value - {0}".format(y))
+            y = self.screen_size - 1
+        return Point(x, y)
+
+    def minimap_point(self, x, y):
+        if x < 0:
+            print("Minimap x coord with wrong value - {0}".format(x))
+            x = 0
+        if x >= self.minimap_size:
+            print("Minimap x coord with wrong value - {0}".format(x))
+            x = self.minimap_size - 1
+        if y < 0:
+            print("Minimap y coord with wrong value - {0}".format(y))
+            y = 0
+        if y >= self.minimap_size:
+            print("Minimap y coord with wrong value - {0}".format(y))
+            y = self.minimap_size - 1
+        return Point(x, y)

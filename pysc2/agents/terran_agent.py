@@ -60,6 +60,9 @@ BARRACKS_GROUP = 7
 SUPPLY_BUFFER = 6
 
 MINIMAP_SIZE = 64
+SCREEN_SIZE = 84
+STEP_MUL = 16
+DIFFICULTY = sc2_env.Difficulty.easy
 
 
 def unit_type_selected(obs, unit_type):
@@ -75,12 +78,15 @@ class TerranAgent(base_agent.BaseAgent):
     def __init__(self):
         super().__init__()
         self.state = TerranState(MINIMAP_SIZE)
-        self.parameters = TerranParameters()
+        self.parameters = TerranParameters(screen_size=SCREEN_SIZE, minimap_size=MINIMAP_SIZE)
         self.stage_provider = StageProvider()
         self.stage = self.stage_provider.provide_next_stage(None)(self.state, self.parameters, self.stage_provider)
 
     def step(self, obs):
         super(TerranAgent, self).step(obs)
+
+        # print(obs.observation.available_actions)
+        # return FUNCTIONS.no_op()
 
         # return FUNCTIONS.no_op()
         # print(list(obs.observation.control_groups))
@@ -115,11 +121,11 @@ def main(unused_argv):
                     map_name="Dreamcatcher",
                     players=[sc2_env.Agent(sc2_env.Race.terran),
                              sc2_env.Bot(sc2_env.Race.zerg,
-                                         sc2_env.Difficulty.very_easy)],
+                                         DIFFICULTY)],
                     agent_interface_format=features.AgentInterfaceFormat(
-                        feature_dimensions=features.Dimensions(screen=84, minimap=MINIMAP_SIZE),
+                        feature_dimensions=features.Dimensions(screen=SCREEN_SIZE, minimap=MINIMAP_SIZE),
                         use_feature_units=True),
-                    step_mul=32,
+                    step_mul=STEP_MUL,
                     game_steps_per_episode=0,
                     visualize=False,
                     ensure_available_actions=False) as env:
@@ -133,6 +139,7 @@ def main(unused_argv):
                 while True:
                     step_actions = [agent.step(timesteps[0])]
                     if timesteps[0].last():
+                        print('Finished {0}'.format(timesteps[0].reward))
                         break
                     timesteps = env.step(step_actions)
 

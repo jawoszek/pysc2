@@ -47,14 +47,14 @@ class TerranRefreshStateStage(Stage):
                 raise EnvironmentError
 
             cc = random.choice(ccs)
-            point = Point(cc.x, cc.y)
+            point = self.parameters.screen_point(cc.x, cc.y)
             self.queue.append(FUNCTIONS.select_point('select_all_type', point))
             return
 
         if self.unit_type_selected(obs, units.Terran.CommandCenter):
             self.queue.append(FUNCTIONS.select_control_group('set', self.state.CCS_GROUP))
             ccs_y, ccs_x = obs.observation.feature_minimap.selected.nonzero()
-            point = Point(ccs_x[0], ccs_y[0])
+            point = self.parameters.screen_point(ccs_x[0], ccs_y[0])
             self.state.current_loc = point
             self.state.current_main_cc_loc = point
             self.remaining_actions -= 1

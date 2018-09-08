@@ -41,7 +41,8 @@ class TerranMoveStage(Stage):
         self.army_selected = False
 
     def process(self, obs):
-        enemies_location_minimap_visible = self.get_positions_of_enemy_on_minimap(obs, only_visible=True)
+        enemies_location_minimap_visible = self.get_positions_of_enemy_on_minimap(obs, only_visible=True,
+                                                                                  distance_from_visible=3)
 
         if enemies_location_minimap_visible and self.can_select_army(obs):
             self.select_army()
@@ -64,13 +65,40 @@ class TerranMoveStage(Stage):
                 self.army_selected = True
                 return
 
-            attack_target = enemies_location_minimap[0]
+            target = enemies_location_minimap[0]
+            attack_target = self.closest_free_point(obs, target)
             self.queue.append(FUNCTIONS.Attack_minimap('now', attack_target))
             self.remaining_actions -= 1
             return
 
         self.remaining_actions -= 1
         return
+
+    def closest_free_point(self, obs, target):
+        minimap = obs.observation.feature_minimap.player_id
+        queue = [target]
+        already = {target}
+        while queue:
+            current = queue.pop()
+            if minimap[current.y][current.x] == features.PlayerRelative.NONE:
+                return current
+            nearby_points = self.nearby_points(current)
+            for point in nearby_points:
+                if point not in already:
+                    queue.append(point)
+                    already.add(point)
+        print('No free close-by target')
+        return target
+
+    def nearby_points(self, point):
+        points = [
+            self.parameters.minimap_point(point.x - 1, point.y),
+            self.parameters.minimap_point(point.x, point.y - 1),
+            self.parameters.minimap_point(point.x + 1, point.y),
+            self.parameters.minimap_point(point.x, point.y + 1)
+        ]
+        random.shuffle(points)
+        return points
 
     @staticmethod
     def should_attack(obs):

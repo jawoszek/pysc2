@@ -76,21 +76,35 @@ class TerranScoutStage(Stage):
                 return
 
             scout_y, scout_x = obs.observation.feature_minimap.selected.nonzero()
-            scout_location = Point(scout_x[0], scout_y[0])
+            scout_location = self.parameters.minimap_point(scout_x[0], scout_y[0])
 
             if scout_location.dist(self.state.current_scout_target) < 2:
-                self.state.current_scout_target = None
+                if not self.state.current_scout_list:
+                    self.state.current_scout_target = None
+                    self.remaining_actions -= 1
+                    return
                 self.state.current_scout_list = self.filter_close_expansions(scout_location)
+                self.sort_scout_targets_by_distance(scout_location)
+                target = self.state.current_scout_list.pop(0)
+                self.state.current_scout_target = target
+                self.queue.append(FUNCTIONS.Move_minimap('now', target))
                 self.remaining_actions -= 1
                 return
 
             self.remaining_actions -= 1
             return
 
-        # what to do with scout?
+        if obs.observation.control_groups[self.state.SCOUT_GROUP][1] < 1:
+            self.state.current_scout_target = None
+            self.state.current_scout_list = None
+            self.remaining_actions -= 1
+            return
 
         self.remaining_actions -= 1
         return
+
+    def sort_scout_targets_by_distance(self, scout_location):
+        self.state.current_scout_list.sort(key=lambda loc: loc.dist(scout_location))
 
     def filter_close_expansions(self, scout_location, distance=2):
         return [location for location in self.state.current_scout_list if location.dist(scout_location) > distance]

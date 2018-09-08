@@ -68,29 +68,20 @@ class TerranRecruitStage(Stage):
             return
 
         if obs.observation.player.food_workers < self.state.already_recruit[units.Terran.SCV]:
-            print('WORKERS MISS')
-            print(obs.observation.player.food_workers)
-            print(self.state.already_recruit[units.Terran.SCV])
             unit_to_recruit = units.Terran.SCV
             if self.recruit(obs, unit_to_recruit, replacement=True):
                 self.remaining_actions -= 1
             return
 
         if self.get_already_recruited_army_units() > obs.observation.player.army_count:
-            print('ARMY MISS')
             if self.currently_recruiting is None and not self.army_selected and self.can_select_army(obs):
-                print('select')
                 self.select_army()
                 self.army_selected = True
                 return
 
             missing_units = self.get_missing_army_units(obs)
             if missing_units:
-                print(missing_units)
-                print(list(missing_units.items()))
                 unit_to_recruit = list(missing_units.items())[0][0]
-                print('RECRUIT missing')
-                print(unit_to_recruit)
                 if self.recruit(obs, unit_to_recruit, replacement=True):
                     self.remaining_actions -= 1
                     return
@@ -106,33 +97,28 @@ class TerranRecruitStage(Stage):
         count_of_buildings_to_use = self.count_units_on_screen(obs, building_to_use)
 
         if self.get_unit_cost(unit_to_recruit) > obs.observation.player.minerals:
-            print('recruit 1')
             self.currently_recruiting = None
             return True
 
         if count_of_buildings_to_use < 1:
-            print('recruit 2')
             self.currently_recruiting = None
             return True
 
         already_recruiting = self.get_units_in_queue(obs, all_units_to_check_in_queue)
 
         if already_recruiting > 3 * count_of_buildings_to_use:
-            print('recruit 3')
             self.currently_recruiting = None
             return True
 
         if not self.unit_type_selected(obs, building_to_use):
             self.select_units(obs, building_to_use)
             self.army_selected = False
-            print('recruit 4')
             return False
 
         action = self.get_unit_to_actions(unit_to_recruit)
 
         if action.id not in obs.observation.available_actions:
             print("Unit {0} can't be recruited".format(unit_to_recruit))
-            print('recruit 5')
             self.currently_recruiting = None
             return True
 
@@ -140,7 +126,6 @@ class TerranRecruitStage(Stage):
         if not replacement:
             self.state.recruit_order_pos += 1
             self.state.add_unit(unit_to_recruit, 1)
-        print('recruit 6')
         self.currently_recruiting = None
         return False
 
