@@ -79,11 +79,11 @@ class TerranScoutStage(Stage):
             scout_location = self.parameters.minimap_point(scout_x[0], scout_y[0])
 
             if scout_location.dist(self.state.current_scout_target) < 2:
+                self.state.current_scout_list = self.filter_close_expansions(scout_location)
                 if not self.state.current_scout_list:
                     self.state.current_scout_target = None
                     self.remaining_actions -= 1
                     return
-                self.state.current_scout_list = self.filter_close_expansions(scout_location)
                 self.sort_scout_targets_by_distance(scout_location)
                 target = self.state.current_scout_list.pop(0)
                 self.state.current_scout_target = target
