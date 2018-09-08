@@ -140,6 +140,8 @@ def main(unused_argv):
                     step_actions = [agent.step(timesteps[0])]
                     if timesteps[0].last():
                         print('Finished {0}'.format(timesteps[0].reward))
+                        with open("results_scripted.csv", "a") as file:
+                            file.write(str(timesteps[0].reward))
                         break
                     timesteps = env.step(step_actions)
 
