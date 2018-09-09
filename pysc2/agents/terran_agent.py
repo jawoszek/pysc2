@@ -98,9 +98,10 @@ class TerranAgent(base_agent.BaseAgent):
             return self.stage.next_action()
 
         if self.stage.ended():
-            print("stage {0} ended".format(type(self.stage)))
+            # TODO proper logging
+            # print("stage {0} ended".format(type(self.stage)))
             self.stage = self.stage.get_next_stage()
-            print("new stage {0}".format(type(self.stage)))
+            # print("new stage {0}".format(type(self.stage)))
             self.stage.prepare(obs)
         else:
             self.stage.process(obs)
