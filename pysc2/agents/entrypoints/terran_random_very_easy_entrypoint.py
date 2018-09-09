@@ -116,4 +116,8 @@ if __name__ == "__main__":
         except (ConnectionError, WebSocketTimeoutException):
             print('TIMEOUT ON APP')
             with open("results_random_very_easy.txt", "a") as file:
-                file.write('\n')
+                file.write(',0\n')
+        except EnvironmentError:
+            print('Environmental error')
+            with open("results_random_very_easy.txt", "a") as file:
+                file.write(',-1\n')
