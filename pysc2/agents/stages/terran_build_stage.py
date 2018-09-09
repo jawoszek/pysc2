@@ -34,6 +34,7 @@ from pysc2.lib.point import Point
 FUNCTIONS = actions.FUNCTIONS
 
 
+# TODO proper logging
 class TerranBuildStage(Stage):
 
     def __init__(self, state: TerranState, parameters: TerranParameters, stage_provider):
@@ -54,7 +55,7 @@ class TerranBuildStage(Stage):
 
         if self.state.currently_building:
             if not self.worker_moved and self.idle_workers_on_order <= self.count_idle_workers_on_screen(obs):
-                print('Worker not started building')
+                # print('Worker not started building')
                 self.remaining_actions -= 1
                 self.reset_stage()
                 return
@@ -62,14 +63,14 @@ class TerranBuildStage(Stage):
             if self.steps_since_ordered_building is not None:
                 if self.count_units_on_screen(obs, self.state.currently_building, False) \
                         > self.count_of_building_during_order:
-                    print('Built successfully')
+                    # print('Built successfully')
                     self.state.build_order_pos += 1
                     self.state.add_building(self.state.currently_building)
                     self.reset_stage()
                     self.remaining_actions -= 1
                     return
                 elif self.steps_since_ordered_building > 20:
-                    print('Abandoned due to timeout')
+                    # print('Abandoned due to timeout')
                     self.reset_stage()
                     self.remaining_actions -= 1
                     return
@@ -105,7 +106,7 @@ class TerranBuildStage(Stage):
         return self.build(obs, building)
 
     def build(self, obs, building):
-        print("ordered building {0}".format(building))
+        # print("ordered building {0}".format(building))
         idle_workers_on_screen_count = self.count_idle_workers_on_screen(obs)
         if building == units.Terran.Refinery and not self.free_vespene_geyser_on_screen(obs):
             self.state.build_order_pos += 1
@@ -151,7 +152,6 @@ class TerranBuildStage(Stage):
         self.steps_since_ordered_building = 0
         self.idle_workers_on_order = idle_workers_on_screen_count
         self.queue.append(building_action('now', location_for_building))
-        print('Building order passed to worker')
         return False
 
     def build_lab(self, obs, lab):

@@ -121,7 +121,8 @@ class TerranRecruitStage(Stage):
         action = self.get_unit_to_actions(unit_to_recruit)
 
         if action.id not in obs.observation.available_actions:
-            print("Unit {0} can't be recruited".format(unit_to_recruit))
+            # TODO proper logging
+            # print("Unit {0} can't be recruited".format(unit_to_recruit))
             self.currently_recruiting = None
             return True
 
