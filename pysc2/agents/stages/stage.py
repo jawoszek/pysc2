@@ -189,5 +189,9 @@ class Stage(object):
         geysers = {units.Neutral.VespeneGeyser, units.Neutral.RichVespeneGeyser}
         refineries = {units.Terran.Refinery, units.Zerg.Extractor, units.Protoss.Assimilator}
         geysers_count = sum([1 for unit in obs.observation.feature_units if unit.unit_type in geysers])
+
+        # TODO fix geyser coming into screen from another expansion
+        geysers_count = min(geysers_count, 2)
+
         refineries_count = sum([1 for unit in obs.observation.feature_units if unit.unit_type in refineries])
         return geysers_count > refineries_count

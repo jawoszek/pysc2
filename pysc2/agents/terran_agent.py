@@ -31,6 +31,7 @@ from pysc2.lib.point import Point
 from pysc2.agents.stages.stage_provider import StageProvider
 from pysc2.agents.data.terran_state import TerranState
 from pysc2.agents.data.terran_parameters import TerranParameters
+from pysc2.agents.data.terran_build_order import TerranBuildOrder
 
 FUNCTIONS = actions.FUNCTIONS
 
@@ -75,10 +76,10 @@ def unit_type_selected(obs, unit_type):
 class TerranAgent(base_agent.BaseAgent):
     """A Terran Agent."""
 
-    def __init__(self):
+    def __init__(self, build_order: TerranBuildOrder=TerranBuildOrder()):
         super().__init__()
         self.state = TerranState(MINIMAP_SIZE)
-        self.parameters = TerranParameters(screen_size=SCREEN_SIZE, minimap_size=MINIMAP_SIZE)
+        self.parameters = TerranParameters(build_order, screen_size=SCREEN_SIZE, minimap_size=MINIMAP_SIZE)
         self.stage_provider = StageProvider()
         self.stage = self.stage_provider.provide_next_stage(None)(self.state, self.parameters, self.stage_provider)
 
