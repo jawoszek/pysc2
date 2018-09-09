@@ -44,6 +44,19 @@ DEFAULT_STEP_MUL = 32
 RESULTS_FILE_NAME = 'results_learning_very_easy.txt'
 
 
+def supply_blocked(build_order):
+    current_cap = 15
+    order_pairs = build_order.build_order
+    for pop, building in order_pairs:
+        if pop > current_cap:
+            break
+        if building == units.Terran.SupplyDepot:
+            current_cap += 8
+    if current_cap < 50:
+        return True
+    return False
+
+
 class TerranRandomVeryEasyEntrypoint(object):
 
     def __init__(self, minimap_size=DEFAULT_MINIMAP_SIZE,
@@ -60,6 +73,9 @@ class TerranRandomVeryEasyEntrypoint(object):
         try:
             while True:
                 build_order = self.build_order_provider.provide()
+
+                if supply_blocked(build_order):
+                    continue
 
                 data = self.parser.read_input_from_text(build_order.storage_format())
                 network_guess = self.network.ask_about_data(data)
