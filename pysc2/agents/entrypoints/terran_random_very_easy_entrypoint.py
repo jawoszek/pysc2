@@ -40,6 +40,19 @@ DEFAULT_SCREEN_SIZE = 84
 DEFAULT_STEP_MUL = 32
 
 
+def supply_blocked(build_order):
+    current_cap = 15
+    order_pairs = build_order.build_order
+    for pop, building in order_pairs:
+        if pop > current_cap:
+            break
+        if building == units.Terran.SupplyDepot:
+            current_cap += 8
+    if current_cap < 50:
+        return True
+    return False
+
+
 class TerranRandomVeryEasyEntrypoint(object):
 
     def __init__(self, minimap_size=DEFAULT_MINIMAP_SIZE,
@@ -69,6 +82,13 @@ class TerranRandomVeryEasyEntrypoint(object):
                     build_order = self.build_order_provider.provide()
                     with open("results_random_very_easy.txt", "a") as file:
                         file.write(build_order.storage_format())
+
+                    if supply_blocked(build_order):
+                        print('Build order with no chances of winning, default lose')
+                        with open("results_random_very_easy.txt", "a") as file:
+                            file.write(",-1\n")
+                        continue
+
                     agent = TerranAgent(build_order)
                     agent.setup(env.observation_spec(), env.action_spec())
 
