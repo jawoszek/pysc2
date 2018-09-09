@@ -66,6 +66,16 @@ class TerranRandomVeryEasyEntrypoint(object):
     def main(self, unused_argv):
         try:
             while True:
+                build_order = self.build_order_provider.provide()
+                with open("results_random_very_easy.txt", "a") as file:
+                    file.write(build_order.storage_format())
+
+                if supply_blocked(build_order):
+                    print('Build order with no chances of winning, default lose')
+                    with open("results_random_very_easy.txt", "a") as file:
+                        file.write(",-1\n")
+                    continue
+
                 with sc2_env.SC2Env(
                         map_name="Dreamcatcher",
                         players=[sc2_env.Agent(sc2_env.Race.terran),
@@ -78,16 +88,6 @@ class TerranRandomVeryEasyEntrypoint(object):
                         game_steps_per_episode=0,
                         visualize=False,
                         ensure_available_actions=False) as env:
-
-                    build_order = self.build_order_provider.provide()
-                    with open("results_random_very_easy.txt", "a") as file:
-                        file.write(build_order.storage_format())
-
-                    if supply_blocked(build_order):
-                        print('Build order with no chances of winning, default lose')
-                        with open("results_random_very_easy.txt", "a") as file:
-                            file.write(",-1\n")
-                        continue
 
                     agent = TerranAgent(build_order)
                     agent.setup(env.observation_spec(), env.action_spec())
