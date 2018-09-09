@@ -37,7 +37,7 @@ FUNCTIONS = actions.FUNCTIONS
 
 DEFAULT_MINIMAP_SIZE = 64
 DEFAULT_SCREEN_SIZE = 84
-DEFAULT_STEP_MUL = 16
+DEFAULT_STEP_MUL = 32
 
 
 class TerranRandomVeryEasyEntrypoint(object):

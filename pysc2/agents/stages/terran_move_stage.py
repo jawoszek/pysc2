@@ -42,7 +42,7 @@ class TerranMoveStage(Stage):
 
     def process(self, obs):
         enemies_location_minimap_visible = self.get_positions_of_enemy_on_minimap(obs, only_visible=True,
-                                                                                  distance_from_visible=3)
+                                                                                  distance_from_visible=8)
 
         if enemies_location_minimap_visible and self.can_select_army(obs):
             self.select_army()
@@ -51,7 +51,7 @@ class TerranMoveStage(Stage):
                 self.army_selected = True
                 return
 
-            attack_target = enemies_location_minimap_visible[0]
+            attack_target = self.closest_free_point(obs, enemies_location_minimap_visible[0])
             self.queue.append(FUNCTIONS.Attack_minimap('now', attack_target))
             self.remaining_actions -= 1
             return
