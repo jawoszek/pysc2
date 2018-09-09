@@ -27,6 +27,7 @@ from pysc2.env import sc2_env
 from pysc2.lib import actions, features, units
 from pysc2.agents.terran_agent import TerranAgent
 from pysc2.agents.data.build_order_provider import BuildOrderProvider, RandomBuildOrderProvider
+from websocket import WebSocketTimeoutException
 
 import random
 
@@ -80,6 +81,7 @@ class TerranRandomVeryEasyEntrypoint(object):
                             print('Finished {0}'.format(timesteps[0].reward))
                             with open("results_random_very_easy.txt", "a") as file:
                                 file.write(",{0}\n".format(timesteps[0].reward))
+                            break
                         timesteps = env.step(step_actions)
 
         except KeyboardInterrupt:
@@ -87,5 +89,11 @@ class TerranRandomVeryEasyEntrypoint(object):
 
 
 if __name__ == "__main__":
-    entrypoint = TerranRandomVeryEasyEntrypoint()
-    app.run(entrypoint.main)
+    while True:
+        try:
+            entrypoint = TerranRandomVeryEasyEntrypoint()
+            app.run(entrypoint.main)
+        except (ConnectionError, WebSocketTimeoutException):
+            print('TIMEOUT ON APP')
+            with open("results_random_very_easy.txt", "a") as file:
+                file.write('\n')

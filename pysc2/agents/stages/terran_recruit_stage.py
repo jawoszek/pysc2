@@ -101,6 +101,9 @@ class TerranRecruitStage(Stage):
             return True
 
         if count_of_buildings_to_use < 1:
+            if not replacement:
+                self.state.recruit_order_pos += 1
+                self.state.add_unit(unit_to_recruit, 1)
             self.currently_recruiting = None
             return True
 
