@@ -74,6 +74,8 @@ setup(
         'websocket-client',
         'whichcraft',
         'scikit-learn>=0.19.2',
+        'tensorflow',
+        'keras'
     ],
     entry_points={
         'console_scripts': [
