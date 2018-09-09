@@ -58,3 +58,25 @@ class BotDataParser:
         inputs_read = list(map(lambda row: self.normalize_row(row, min_pop, max_pop), inputs_read))
         outputs_read = list(map(self.normalize_output_row, outputs_read))
         return inputs_read, outputs_read
+
+    def read_input_from_text(self, text):
+        min_pop = 10
+        max_pop = 100
+        inputs_read = []
+        for line in text.split('\n'):
+            whole_line = "({})".format(line)
+            whole_object = literal_eval(whole_line)
+            whole_record = []
+            for pop, building in whole_object[0]:
+                whole_record.append(pop)
+                whole_record.append(building)
+                # if pop < min_pop:
+                #     min_pop = pop
+                # if pop > max_pop:
+                #     max_pop = pop
+            for unit in whole_object[1]:
+                whole_record.append(unit)
+            inputs_read.append(whole_record)
+
+        inputs_read = list(map(lambda row: self.normalize_row(row, min_pop, max_pop), inputs_read))
+        return inputs_read

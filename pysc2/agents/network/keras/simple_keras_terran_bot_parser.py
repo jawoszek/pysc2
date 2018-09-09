@@ -28,19 +28,22 @@ class SimpleKerasTerranBotNetwork:
         x_train = array(input)
         y_train = to_categorical(array(output).T[0])
 
-        self.model.fit(x_train, y_train, epochs=50000, batch_size=256)
+        self.model.fit(x_train, y_train, epochs=10000, batch_size=256)
 
     def test_data_from_file(self, path):
         parser = BotDataParser()
         input_t, output_t = parser.read_data_file(path)
 
-        print(output_t)
         x_test = array(input_t)
-        y_test = to_categorical(array(output_t).T[0])
-        print(y_test)
         # loss_and_metrics = model.evaluate(x_test, y_test, batch_size=128)
         results = self.model.predict(x_test, batch_size=256)
         return [(self.is_class_hit(results[i], output_t[i][0]), output_t[i][0], results[i]) for i in range(0, len(results))]
+
+    def ask_about_data(self, data):
+        x_test = array(data)
+        results = self.model.predict(x_test, batch_size=256)
+        print(results)
+        return [result[1] > result[0] for result in results]
 
     def is_class_hit(self, result, real_result):
         resulting_class = 1 if result[1] > result[0] else 0
