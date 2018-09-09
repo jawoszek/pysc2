@@ -80,7 +80,7 @@ class TerranBuildStage(Stage):
             self.remaining_actions -= 1
             return
 
-        if self.next_build_order_reached(obs) and self.previous_building_built(obs):
+        if self.next_build_order_reached(obs):
             should_pass_action = self.order_building(obs, self.parameters.build_order_building(self.state))
             if should_pass_action:
                 self.remaining_actions -= 1
@@ -109,6 +109,7 @@ class TerranBuildStage(Stage):
         idle_workers_on_screen_count = self.count_idle_workers_on_screen(obs)
         if building == units.Terran.Refinery and not self.free_vespene_geyser_on_screen(obs):
             self.state.build_order_pos += 1
+            self.remaining_actions -= 1
             self.reset_stage()
             return True
 
@@ -127,9 +128,21 @@ class TerranBuildStage(Stage):
         building_action = self.building_action(building)
         building_possible = building_action.id in obs.observation.available_actions
 
+        requirements = self.buildings_requirements().get(building, None)
+        passed = not requirements or all([self.count_units_on_screen(obs, req) > 0 for req in requirements])
+
+        if not passed and all([self.count_units_on_screen(obs, req, False) > 0 for req in requirements]):
+            print('Waiting for requirements for building {0}'.format(building))
+            self.reset_stage()
+            return True
+
+        if not passed:
+            print('Requirements missing for building {0}'.format(building))
+            self.state.build_order_pos += 1
+            self.reset_stage()
+            return True
+
         if not building_possible:
-            print("currently selected single: {0}".format(obs.observation.single_select))
-            print("currently selected multi: {0}".format(obs.observation.multi_select))
             raise EnvironmentError('Building {0} not possible'.format(building))
 
         self.state.currently_building = building
@@ -164,8 +177,6 @@ class TerranBuildStage(Stage):
         building_action = self.building_action(lab)
         lab_possible = building_action.id in obs.observation.available_actions
         if not lab_possible:
-            print("currently selected single: {0}".format(obs.observation.single_select))
-            print("currently selected multi: {0}".format(obs.observation.multi_select))
             raise EnvironmentError('Lab {0} not possible'.format(lab))
 
         self.queue.append(building_action('now'))
@@ -175,6 +186,12 @@ class TerranBuildStage(Stage):
     def building_affordable(self, obs, building):
         return self.building_cost(building) <= obs.observation.player.minerals \
                and self.building_cost_vespene(building) <= obs.observation.player.vespene
+
+    def building_pass_requirements(self, obs, building):
+        requirements = self.buildings_requirements().get(building, None)
+        if not requirements:
+            return True
+        return all([self.count_units_on_screen(obs, req) > 0 for req in requirements])
 
     @staticmethod
     def building_action(building):
@@ -186,6 +203,12 @@ class TerranBuildStage(Stage):
             units.Terran.BarracksReactor: FUNCTIONS.Build_Reactor_quick,
             units.Terran.BarracksTechLab: FUNCTIONS.Build_TechLab_quick
         }[building]
+
+    @staticmethod
+    def buildings_requirements():
+        return {
+            units.Terran.Barracks: [units.Terran.SupplyDepot]
+        }
 
     @staticmethod
     def building_cost(building):
