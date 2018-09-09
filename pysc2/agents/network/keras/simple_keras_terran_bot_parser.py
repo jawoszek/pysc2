@@ -13,7 +13,7 @@ class SimpleKerasTerranBotNetwork:
         super().__init__()
         self.model = Sequential()
         self.model.add(Dense(units=64, activation='relu', input_dim=140))
-        self.model.add(Dropout(0.5))
+        # self.model.add(Dropout(0.5))
         # self.model.add(Dense(64, activation='relu'))
         # self.model.add(Dropout(0.5))
         self.model.add(Dense(units=2, activation='softmax'))
@@ -43,7 +43,7 @@ class SimpleKerasTerranBotNetwork:
         x_test = array(data)
         results = self.model.predict(x_test, batch_size=256)
         print(results)
-        return [result[1] > 0.99 and result[0] < 0.01 for result in results]
+        return [result[1] > 0.999 and result[0] < 0.001 for result in results]
 
     def is_class_hit(self, result, real_result):
         resulting_class = 1 if result[1] > result[0] else 0

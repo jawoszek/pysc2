@@ -269,10 +269,14 @@ class TerranBuildStage(Stage):
             minerals_avg_loc_y = sum_y / len(minerals)
             minerals_avg_loc = self.parameters.screen_point(minerals_avg_loc_x, minerals_avg_loc_y)
 
+        loop_count = 0
         while self.location_wrong(obs, loc, building_type, minerals_avg_loc):
             random_x = random.randint(10, 75)
             random_y = random.randint(10, 75)
             loc = self.parameters.screen_point(random_x, random_y)
+            loop_count += 1
+            if loop_count > 100000:
+                return loc
         return loc
 
     def location_wrong(self, obs, loc, building_type, minerals_center):
