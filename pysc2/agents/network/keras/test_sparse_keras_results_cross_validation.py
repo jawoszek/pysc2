@@ -75,7 +75,7 @@ class SimpleKerasTest:
             print("{0}% success".format(percent))
             results_sum += percent
         print("average success: {0}%".format(results_sum / k))
-        with open('cross_validation_sparse.txt', "a") as file:
+        with open('balanced_cross_validation_sparse.txt', "a") as file:
             file.write("{0},{1}\n".format(epochs, results_sum / k))
 
     def check_results(self, results, output_t):
@@ -89,4 +89,4 @@ class SimpleKerasTest:
 if __name__ == "__main__":
     network = SimpleKerasTest()
     for i in range(1, 400):
-        network.learn_and_cross_validate('../results_random_very_easy_storage.txt', i)
+        network.learn_and_cross_validate('../balanced_results_random_very_easy.txt', i)

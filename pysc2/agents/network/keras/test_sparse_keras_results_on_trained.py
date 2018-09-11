@@ -55,7 +55,7 @@ class SimpleKerasTest:
         classes = self.check_results(results, output)
         percent = len([c for c in classes if c[0]]) / len(classes) * 100
         print("{0}% success".format(percent))
-        with open('balanced_test_on_train_sparse.txt', "a") as file:
+        with open('test_on_train_sparse.txt', "a") as file:
             file.write("{0},{1}\n".format(epochs,percent))
 
     def check_results(self, results, output_t):
@@ -68,5 +68,5 @@ class SimpleKerasTest:
 
 if __name__ == "__main__":
     network = SimpleKerasTest()
-    for i in range(1, 400):
-        network.learn_and_test_on_the_same_data('../balanced_results_random_very_easy.txt', i)
+    for i in range(0,400):
+        network.learn_and_test_on_the_same_data('../results_random_very_easy_storage.txt', i)
