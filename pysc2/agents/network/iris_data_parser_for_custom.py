@@ -55,18 +55,39 @@ for line in inputs:
         if value > maxes[i]:
             maxes[i] = value
 
+outputs_names = outputs
 inputs = list(map(lambda x: normalize_values(x, mines, maxes), inputs))
 outputs = list(map(lambda x: normalize_class(x), outputs))
 
 
-network = prepare_dense_network([4, 3, 3])
+network = prepare_dense_network([4, 6, 5, 3])
 # print_weights(network)
 
-train_network(network, inputs, outputs, 10000)
+train_network(network, inputs, outputs, 500)
 # custom_network.print_weights(network)
 
-test_data = list(map(lambda input: normalize_values(input, mines, maxes), inputs))
+test_data = normalize_values([5.8,2.7,4.1,1.0], mines, maxes)
 output = run_network(network, test_data)
-
 print(output)
-print(list(map(lambda e: choose_class_by_result(e), output)))
+
+# received_names = []
+# count = 0
+# for i in range(0, len(outputs_names)):
+#     output = run_network(network, normalize_values(inputs[i], mines, maxes))
+#     received_names.append(choose_class_by_result(output))
+#
+# print(count)
+# print(received_names)
+# print(outputs_names)
+# test_data = list(map(lambda input: normalize_values(input, mines, maxes), inputs))
+# output = run_network(network, test_data)
+#
+# print(len(outputs_names))
+# print(len(output))
+#
+# print(outputs_names)
+# received_names = list(map(lambda e: choose_class_by_result(e), output))
+# print(received_names)
+
+# hits = sum([1 for i in range(0, len(received_names)) if outputs_names[i] == received_names[i]])
+# print(hits)
