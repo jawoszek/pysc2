@@ -28,7 +28,7 @@ class SimpleKerasTerranBotNetwork:
         x_train = array(input)
         y_train = to_categorical(array(output).T[0])
 
-        self.model.fit(x_train, y_train, epochs=200, batch_size=256)
+        self.model.fit(x_train, y_train, epochs=10000, batch_size=256)
 
     def test_data_from_file(self, path):
         parser = BotDataParser()
