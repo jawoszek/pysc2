@@ -3,7 +3,9 @@ from matplotlib import pyplot
 # data_file = './keras/balanced_test_on_train_dense.txt'
 # data_file = './keras/balanced_cross_validation_dense.txt'
 # data_file = './keras/test_on_train_dense.txt'
-data_file = './keras/cross_validation_dense.txt'
+# data_file = './keras/cross_validation_dense.txt'
+
+data_file = './keras/cross_validation_sparse_far.txt'
 
 y = []
 x = []
