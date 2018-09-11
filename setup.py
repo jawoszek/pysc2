@@ -75,7 +75,8 @@ setup(
         'whichcraft',
         'scikit-learn>=0.19.2',
         'tensorflow',
-        'keras'
+        'keras',
+        'matplotlib'
     ],
     entry_points={
         'console_scripts': [

@@ -28,7 +28,7 @@ class SimpleKerasTerranBotNetwork:
         x_train = array(input)
         y_train = to_categorical(array(output).T[0])
 
-        self.model.fit(x_train, y_train, epochs=10000, batch_size=256)
+        self.model.fit(x_train, y_train, epochs=200, batch_size=256)
 
     def test_data_from_file(self, path):
         parser = BotDataParser()
@@ -52,7 +52,7 @@ class SimpleKerasTerranBotNetwork:
 
 if __name__ == "__main__":
     network = SimpleKerasTerranBotNetwork()
-    network.train_on_data_from_file('../balanced_results_random_very_easy.txt')
+    network.train_on_data_from_file('../results_random_very_easy.txt')
     classes = network.test_data_from_file('../tests_random_very_easy.txt')
     print(classes)
     print("{0}% success".format(len([c for c in classes if c[0]])/len(classes)*100))
