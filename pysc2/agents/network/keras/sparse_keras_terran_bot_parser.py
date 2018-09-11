@@ -55,7 +55,7 @@ class SparseKerasTerranBotNetwork:
         x_train = split_input(input)
         y_train = to_categorical(array(output).T[0])
 
-        self.model.fit(x_train, y_train, epochs=100
+        self.model.fit(x_train, y_train, epochs=10000
                        , batch_size=256)
 
     def test_data_from_file(self, path):
