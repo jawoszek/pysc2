@@ -3,6 +3,7 @@ from keras.layers import Dense, Dropout, Input, concatenate
 from numpy import array
 from pysc2.agents.network.terran_bot_parser import BotDataParser, BUILD_NODES, RECRUIT_NODES
 from keras.utils import to_categorical
+import random
 
 TOTAL_NUMBER_OF_BASE_NEURONS = BUILD_NODES * 2 + RECRUIT_NODES
 
@@ -40,38 +41,45 @@ def split_input(input):
     return [inputs_1, inputs_2, inputs_3, inputs_4, inputs_5]
 
 
-class SparseKerasTerranBotNetwork:
+class SimpleKerasTest:
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.model = construct_network()
+    def learn_and_cross_validate(self, path, epochs=100):
+        model = construct_network()
 
-    def train_on_data_from_file(self, path):
         parser = BotDataParser()
         input, output = parser.read_data_file(path)
 
-        # print(input)
-        # print(split_input(input))
-        x_train = split_input(input)
-        y_train = to_categorical(array(output).T[0])
+        indexes = list(range(0, len(input)))
+        random.shuffle(indexes)
+        k = 5
+        segment_length = int(len(input)/k)
+        results_all = []
+        for i in range(0, k):
+            test_range = range(i*segment_length, (i+1)*segment_length)
+            indexes_l = [indexes[index] for index in range(0, len(indexes)) if index not in test_range]
+            indexes_t = [indexes[index] for index in range(0, len(indexes)) if index in test_range]
+            train_input = [input[index] for index in range(0, len(input)) if index in indexes_l]
+            train_output = [output[index] for index in range(0, len(input)) if index in indexes_l]
+            test_input = [input[index] for index in range(0, len(input)) if index in indexes_t]
+            test_output = [output[index] for index in range(0, len(input)) if index in indexes_t]
+            x_train = split_input(train_input)
+            y_train = to_categorical(array(train_output).T[0])
+            model.fit(x_train, y_train, epochs=epochs, batch_size=256)
+            x_test = split_input(test_input)
+            results = model.predict(x_test, batch_size=256)
+            results_single = self.check_results(results, test_output)
+            results_all.append(results_single)
+        results_sum = 0
+        for classes in results_all:
+            percent = len([c for c in classes if c[0]]) / len(classes) * 100
+            print("{0}% success".format(percent))
+            results_sum += percent
+        print("average success: {0}%".format(results_sum / k))
+        with open('cross_validation_sparse.txt', "a") as file:
+            file.write("{0},{1}\n".format(epochs, results_sum / k))
 
-        self.model.fit(x_train, y_train, epochs=100
-                       , batch_size=256)
-
-    def test_data_from_file(self, path):
-        parser = BotDataParser()
-        input_t, output_t = parser.read_data_file(path)
-
-        x_test = split_input(input_t)
-        # loss_and_metrics = model.evaluate(x_test, y_test, batch_size=128)
-        results = self.model.predict(x_test, batch_size=256)
+    def check_results(self, results, output_t):
         return [(self.is_class_hit(results[i], output_t[i][0]), output_t[i][0], results[i]) for i in range(0, len(results))]
-
-    def ask_about_data(self, data):
-        x_test = split_input(data)
-        results = self.model.predict(x_test, batch_size=256)
-        print(results)
-        return [result[1] > 0.999 and result[0] < 0.001 for result in results]
 
     def is_class_hit(self, result, real_result):
         resulting_class = 1 if result[1] > result[0] else 0
@@ -79,8 +87,6 @@ class SparseKerasTerranBotNetwork:
 
 
 if __name__ == "__main__":
-    network = SparseKerasTerranBotNetwork()
-    network.train_on_data_from_file('../results_random_very_easy_storage.txt')
-    classes = network.test_data_from_file('../results_random_very_easy_storage.txt')
-    print(classes)
-    print("{0}% success".format(len([c for c in classes if c[0]])/len(classes)*100))
+    network = SimpleKerasTest()
+    for i in range(1, 400):
+        network.learn_and_cross_validate('../results_random_very_easy_storage.txt', i)

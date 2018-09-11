@@ -28,7 +28,7 @@ from pysc2.lib import actions, features, units
 from pysc2.agents.terran_agent import TerranAgent
 from pysc2.agents.data.build_order_provider import BuildOrderProvider, RandomBuildOrderProvider
 from websocket import WebSocketTimeoutException
-from pysc2.agents.network.keras.simple_keras_terran_bot_parser import SimpleKerasTerranBotNetwork
+from pysc2.agents.network.keras.sparse_keras_terran_bot_parser import SparseKerasTerranBotNetwork
 from pysc2.agents.network.terran_bot_parser import BotDataParser
 
 import random
@@ -53,7 +53,7 @@ class TerranRandomVeryEasyEntrypoint(object):
         self.minimap_size = minimap_size
         self.screen_size = screen_size
         self.step_mul = step_mul
-        self.network = SimpleKerasTerranBotNetwork()
+        self.network = SparseKerasTerranBotNetwork()
         self.parser = BotDataParser()
 
     def main(self, unused_argv):

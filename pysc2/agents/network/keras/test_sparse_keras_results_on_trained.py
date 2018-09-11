@@ -3,6 +3,7 @@ from keras.layers import Dense, Dropout, Input, concatenate
 from numpy import array
 from pysc2.agents.network.terran_bot_parser import BotDataParser, BUILD_NODES, RECRUIT_NODES
 from keras.utils import to_categorical
+import random
 
 TOTAL_NUMBER_OF_BASE_NEURONS = BUILD_NODES * 2 + RECRUIT_NODES
 
@@ -40,38 +41,25 @@ def split_input(input):
     return [inputs_1, inputs_2, inputs_3, inputs_4, inputs_5]
 
 
-class SparseKerasTerranBotNetwork:
+class SimpleKerasTest:
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.model = construct_network()
+    def learn_and_test_on_the_same_data(self, path, epochs=100):
+        model = construct_network()
 
-    def train_on_data_from_file(self, path):
         parser = BotDataParser()
         input, output = parser.read_data_file(path)
-
-        # print(input)
-        # print(split_input(input))
         x_train = split_input(input)
         y_train = to_categorical(array(output).T[0])
+        model.fit(x_train, y_train, epochs=epochs, batch_size=256)
+        results = model.predict(x_train, batch_size=256)
+        classes = self.check_results(results, output)
+        percent = len([c for c in classes if c[0]]) / len(classes) * 100
+        print("{0}% success".format(percent))
+        with open('balanced_test_on_train_sparse.txt', "a") as file:
+            file.write("{0},{1}\n".format(epochs,percent))
 
-        self.model.fit(x_train, y_train, epochs=100
-                       , batch_size=256)
-
-    def test_data_from_file(self, path):
-        parser = BotDataParser()
-        input_t, output_t = parser.read_data_file(path)
-
-        x_test = split_input(input_t)
-        # loss_and_metrics = model.evaluate(x_test, y_test, batch_size=128)
-        results = self.model.predict(x_test, batch_size=256)
+    def check_results(self, results, output_t):
         return [(self.is_class_hit(results[i], output_t[i][0]), output_t[i][0], results[i]) for i in range(0, len(results))]
-
-    def ask_about_data(self, data):
-        x_test = split_input(data)
-        results = self.model.predict(x_test, batch_size=256)
-        print(results)
-        return [result[1] > 0.999 and result[0] < 0.001 for result in results]
 
     def is_class_hit(self, result, real_result):
         resulting_class = 1 if result[1] > result[0] else 0
@@ -79,8 +67,6 @@ class SparseKerasTerranBotNetwork:
 
 
 if __name__ == "__main__":
-    network = SparseKerasTerranBotNetwork()
-    network.train_on_data_from_file('../results_random_very_easy_storage.txt')
-    classes = network.test_data_from_file('../results_random_very_easy_storage.txt')
-    print(classes)
-    print("{0}% success".format(len([c for c in classes if c[0]])/len(classes)*100))
+    network = SimpleKerasTest()
+    for i in range(1, 400):
+        network.learn_and_test_on_the_same_data('../balanced_results_random_very_easy.txt', i)
