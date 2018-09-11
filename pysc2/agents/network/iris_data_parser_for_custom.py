@@ -65,8 +65,8 @@ network = prepare_dense_network([4, 3, 3])
 train_network(network, inputs, outputs, 10000)
 # custom_network.print_weights(network)
 
-test_data = normalize_values([5.8,2.7,4.1,1.0], mines, maxes)
+test_data = list(map(lambda input: normalize_values(input, mines, maxes), inputs))
 output = run_network(network, test_data)
 
 print(output)
-print(choose_class_by_result(output))
+print(list(map(lambda e: choose_class_by_result(e), output)))
